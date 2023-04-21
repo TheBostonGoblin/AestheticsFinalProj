@@ -1,12 +1,108 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Tone.js Example</title>
-  </head>
-  <body>
-    <h1>Tone.js Example</h1>
-    <button id="play-btn">Play</button>
-    <script src="http://unpkg.com/tone"></script>
-    <script src="tone.js" type="module"></script>
-  </body>
+
+<head>
+  <title>Tone.js Example</title>
+</head>
+
+<body>
+  <h1>Tone.js Example</h1>
+  <button id="play-btn">Play</button>
+  <script src="http://unpkg.com/tone"></script>
+  <script src="tone.js" type="module"></script>
+
+  <h2>XHR - Load JSON</h2>
+
+  <hr>
+  <button id="my-button">Load Data</button>
+  <div id="output">Click button to load</div>
+
+  <label for="transcript">Transcript:</label>
+  <input type="text" id="transcript" name="transcript"><br><br>
+
+  <h1>Top Emotion Detected:</h1>
+  <h2 id="topEmotion"></h2>
+</body>
+
+<script>
+
+  let emotionScores = [];
+  document.querySelector("#my-button").onclick = loadJsonXHR;
+  function loadJsonXHR() {
+
+    emotionScores = [];
+    emotionsDetected = [];
+    let jsonResponse = null;
+
+    let userInput = document.querySelector("#transcript").value;
+
+    let stringQueryUserInput = userInput.replaceAll(" ", "%20")
+
+    let queryRequest = `https://twinword-emotion-analysis-v1.p.rapidapi.com/analyze/?text=${stringQueryUserInput}`;
+
+
+    const data = null;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function () {
+      if (this.readyState === this.DONE) {
+        console.log(this.responseText);
+        jsonResponse = this.responseText;
+        let jsonObject = JSON.parse(jsonResponse);
+        console.log(jsonObject.emotion_scores);
+
+        emotionScores.push(jsonObject.emotion_scores.anger);
+        emotionScores.push(jsonObject.emotion_scores.disgust);
+        emotionScores.push(jsonObject.emotion_scores.fear);
+        emotionScores.push(jsonObject.emotion_scores.joy);
+        emotionScores.push(jsonObject.emotion_scores.sadness);
+        emotionScores.push(jsonObject.emotion_scores.surprise);
+
+        emotionsDetected = jsonObject.emotions_detected;
+
+        console.log(emotionScores);
+        console.log(emotionsDetected);
+
+        let highestScore = 0;
+        let currentTopEmotion = 0;
+        for (let x = 0; x < emotionScores.length; x++) {
+          if (emotionScores[x] > currentTopEmotion) {
+            highestScore = x;
+            currentTopEmotion = emotionScores[x]
+          }
+        }
+
+        if (highestScore === 0) {
+          document.querySelector("#topEmotion").innerHTML = "Anger";
+        }
+        else if (highestScore === 1) {
+          document.querySelector("#topEmotion").innerHTML = "Disgust";
+        }
+        else if (highestScore === 2) {
+          document.querySelector("#topEmotion").innerHTML = "Fear";
+        }
+        else if (highestScore === 3) {
+          document.querySelector("#topEmotion").innerHTML = "Joy";
+        }
+        else if (highestScore === 4) {
+          document.querySelector("#topEmotion").innerHTML = "Sadness";
+        }
+        else if (highestScore === 5) {
+          document.querySelector("#topEmotion").innerHTML = "Suprise";
+        }
+      }
+    });
+
+
+
+    let test = xhr.open("GET", queryRequest);
+    xhr.setRequestHeader("X-RapidAPI-Key", "fdb74b706emshbf375d86a4ae42dp1a8f40jsn926b045ca0f8");
+    xhr.setRequestHeader("X-RapidAPI-Host", "twinword-emotion-analysis-v1.p.rapidapi.com");
+
+    xhr.send(data);
+
+  }
+</script>
+
 </html>
