@@ -1,27 +1,53 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Tone.js Example</title>
+    <title>Aesthetics Final Project</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
   </head>
 
   <body>
     <section class="section">
       <div class="container">
-        <h1 class="title">Tone.js Example</h1>
-        <button id="play-btn" class="button is-primary">Play</button>
+        <h1 class="title">Music from Text Emotions</h1>
+        <h1 class="subtitle">Author: Colby, Daniel, Zhao</h1>
+        <button id="play-btn" class="button is-primary mb-3">Play</button>
         <script src="http://unpkg.com/tone"></script>
         <script src="main.js" type="module"></script>
 
         <h2 class="title is-4">Emotion Analysis</h2>
 
         <label class="label" for="transcript">Transcript:</label>
-        <input class="input" type="text" id="transcript" name="transcript" /><br /><br />
-        <button id="my-button" class="button is-info">Analyze</button>
+        <!-- <input class="input" type="text" id="transcript" name="transcript" /><br /><br /> -->
+        <textarea class="textarea" id="transcript" name="transcript" rows="1"></textarea><br />
+        <script>
+          const textarea = document.querySelector("#transcript");
+          // Disallow the user to manually resize the textarea
+          textarea.style.resize = "none";
+          textarea.addEventListener("input", autoResizeTextarea);
+
+          // Always auto adjust size
+          function autoResizeTextarea() {
+            this.style.height = "auto";
+            this.style.height = this.scrollHeight + "px";
+          }
+          // Enlarge the box when current content is overflowing but don't shrink it
+          // function autoResizeTextarea() {
+          //   const minHeight = this.style.minHeight || "0px";
+          //   const height = Math.max(parseFloat(minHeight), this.scrollHeight);
+          //   const overflow = this.scrollHeight > this.clientHeight;
+
+          //   if (overflow) {
+          //     this.style.height = `${height}px`;
+          //   }
+          // }
+        </script>
+
+        <button id="generate-btn" class="button is-success">Generate</button>
+        <button id="analyze-btn" class="button is-info">Analyze</button>
         <div id="output">Click button to analyze</div>
 
         <h1 class="title is-3">Top Emotion Detected:</h1>
-        <h2 id="topEmotion" class="title is-4"></h2>
+        <h2 id="top-emotion-detected" class="title is-4"></h2>
       </div>
     </section>
   </body>

@@ -1,51 +1,72 @@
-import { setEmotionIndex } from "./tone.js";
+import { setEmotions } from "./tone.js";
 
-// Load JSON and analyze emotions
-document.querySelector("#my-button").onclick = loadJsonXHR;
+async function fetchPassages() {
+  const quotes = [];
 
-let emotionScores;
-let emotionsDetected;
-let jsonResponse;
-let jsonObject;
+  // Generate 8 quotes
+  for (let i = 0; i < 8; i++) {
+    const response = await fetch("https://api.quotable.io/random");
+    const data = await response.json();
+    quotes.push(data.content);
+  }
 
-function loadJsonXHR() {
-  emotionScores = [];
-  emotionsDetected = [];
-  jsonResponse = null;
-
-  let userInput = document.querySelector("#transcript").value;
-  let stringQueryUserInput = userInput.replaceAll(" ", "%20");
-  let queryRequest = `https://twinword-emotion-analysis-v1.p.rapidapi.com/analyze/?text=${stringQueryUserInput}`;
-
-  const data = null;
-  const xhr = new XMLHttpRequest();
-
-  xhr.addEventListener("readystatechange", function () {
-    if (this.readyState === this.DONE) {
-      jsonResponse = this.responseText;
-      jsonObject = JSON.parse(jsonResponse);
-      console.log(jsonObject);
-      emotionScores = getEmotionScores(jsonObject);
-      emotionsDetected = jsonObject.emotions_detected;
-
-      let highestScoreIndex = getHighestScoreIndex(emotionScores);
-      displayTopEmotion(highestScoreIndex);
-    }
-  });
-
-  sendRequest(xhr, queryRequest, data);
+  document.querySelector("#transcript").value = quotes.join("\n");
+  document.querySelector("#transcript").dispatchEvent(new Event("input"));
 }
 
-function getEmotionScores(jsonObject) {
-  let emotionScores = [
-    jsonObject.emotion_scores.anger,
-    jsonObject.emotion_scores.disgust,
-    jsonObject.emotion_scores.fear,
-    jsonObject.emotion_scores.joy,
-    jsonObject.emotion_scores.sadness,
-    jsonObject.emotion_scores.surprise,
-  ];
-  return emotionScores;
+document.querySelector("#generate-btn").addEventListener("click", fetchPassages);
+
+// Load JSON and analyze emotions
+document.querySelector("#analyze-btn").onclick = loadJsonXHR;
+
+let emotionScores;
+
+async function loadJsonXHR() {
+  let userInput = document.querySelector("#transcript").value;
+
+  window.test = userInput;
+  // Split the userInput into quotes
+  const quotes = userInput.split("\n").filter((quote) => quote.trim() !== "");
+
+  // Create an array to store emotion indices
+  const emotionIndices = [];
+
+  console.log("passages:", quotes);
+  for (const quote of quotes) {
+    const stringQueryUserInput = quote.replaceAll(" ", "%20");
+    const queryRequest = `https://twinword-emotion-analysis-v1.p.rapidapi.com/analyze/?text=${stringQueryUserInput}`;
+
+    // Wrap the XMLHttpRequest in a Promise
+    const emotionIndex = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === this.DONE) {
+          emotionScores = [];
+          let jsonObject = JSON.parse(this.responseText);
+          console.log("json:", jsonObject);
+
+          emotionScores.push(jsonObject.emotion_scores.anger);
+          emotionScores.push(jsonObject.emotion_scores.disgust);
+          emotionScores.push(jsonObject.emotion_scores.fear);
+          emotionScores.push(jsonObject.emotion_scores.joy);
+          emotionScores.push(jsonObject.emotion_scores.sadness);
+          emotionScores.push(jsonObject.emotion_scores.surprise);
+
+          resolve(getHighestScoreIndex(emotionScores));
+        }
+      });
+
+      sendRequest(xhr, queryRequest, null);
+    });
+
+    emotionIndices.push(emotionIndex);
+  }
+
+  const emotions = ["anger", "disgust", "fear", "joy", "sadness", "surprise"];
+  document.querySelector("#top-emotion-detected").innerHTML = emotionIndices.map((index) => emotions[index]).join(", ");
+
+  setEmotions(emotionIndices);
 }
 
 function getHighestScoreIndex(emotionScores) {
@@ -58,12 +79,6 @@ function getHighestScoreIndex(emotionScores) {
     }
   }
   return highestScoreIndex;
-}
-
-function displayTopEmotion(highestScoreIndex) {
-  const emotions = ["Anger", "Disgust", "Fear", "Joy", "Sadness", "Surprise"];
-  document.querySelector("#topEmotion").innerHTML = emotions[highestScoreIndex];
-  setEmotionIndex(highestScoreIndex); // Call setEmotionIndex function from tone.js with the emotion index
 }
 
 function sendRequest(xhr, queryRequest, data) {
