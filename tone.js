@@ -1,10 +1,42 @@
-const synth = new Tone.Synth().toDestination();
-const bpm = 120;
+// const synth = new Tone.Synth().toDestination();
+
+// Load all samples so we can select which instrument to play the music
+const samples = SampleLibrary.load({
+  instruments: [
+    "piano",
+    "bass-electric",
+    "bassoon",
+    "cello",
+    "clarinet",
+    "contrabass",
+    "flute",
+    "french-horn",
+    "guitar-acoustic",
+    "guitar-electric",
+    "guitar-nylon",
+    "harmonium",
+    "harp",
+    "organ",
+    "saxophone",
+    "trombone",
+    "trumpet",
+    "tuba",
+    "violin",
+    "xylophone",
+  ],
+  baseUrl: "tonejs-instruments/samples/",
+});
+
+// For test purpose, we only use guitar.
+const guitar = samples["guitar-electric"];
+guitar.toMaster();
+
+const bpm = 130;
 const beatLength = 60 / bpm;
 
 document.querySelector("#play-btn").addEventListener("click", start);
 
-let emotionIndices = [];
+let emotionIndices = [0, 2, 3, 4, 3, 1, 2, 4, 1, 4, 2, 2, 1, 0, 0, 3, 4];
 
 function start() {
   Tone.start();
@@ -74,7 +106,8 @@ function generateMusic(emotionIndex, startTime) {
   const pattern = patterns[emotion][Math.floor(Math.random() * patterns[emotion].length)];
 
   for (let i = 0; i < pattern.length; i++) {
-    synth.triggerAttackRelease(pattern[i], "8n", startTime + (i * beatLength) / 2);
+    // synth.triggerAttackRelease(pattern[i], "8n", startTime + (i * beatLength) / 2);
+    guitar.triggerAttackRelease(pattern[i], "8n", startTime + (i * beatLength) / 2);
   }
 
   // Return the total duration of the pattern
