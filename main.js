@@ -1,15 +1,17 @@
-import { start } from "./tone.js";
-
-// Start tone.js
-document.querySelector("#play-btn").onclick = start;
+import { setEmotionIndex } from "./tone.js";
 
 // Load JSON and analyze emotions
 document.querySelector("#my-button").onclick = loadJsonXHR;
 
+let emotionScores;
+let emotionsDetected;
+let jsonResponse;
+let jsonObject;
+
 function loadJsonXHR() {
-  let emotionScores = [];
-  let emotionsDetected = [];
-  let jsonResponse = null;
+  emotionScores = [];
+  emotionsDetected = [];
+  jsonResponse = null;
 
   let userInput = document.querySelector("#transcript").value;
   let stringQueryUserInput = userInput.replaceAll(" ", "%20");
@@ -21,7 +23,8 @@ function loadJsonXHR() {
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === this.DONE) {
       jsonResponse = this.responseText;
-      let jsonObject = JSON.parse(jsonResponse);
+      jsonObject = JSON.parse(jsonResponse);
+      console.log(jsonObject);
       emotionScores = getEmotionScores(jsonObject);
       emotionsDetected = jsonObject.emotions_detected;
 
@@ -60,6 +63,7 @@ function getHighestScoreIndex(emotionScores) {
 function displayTopEmotion(highestScoreIndex) {
   const emotions = ["Anger", "Disgust", "Fear", "Joy", "Sadness", "Surprise"];
   document.querySelector("#topEmotion").innerHTML = emotions[highestScoreIndex];
+  setEmotionIndex(highestScoreIndex); // Call setEmotionIndex function from tone.js with the emotion index
 }
 
 function sendRequest(xhr, queryRequest, data) {
